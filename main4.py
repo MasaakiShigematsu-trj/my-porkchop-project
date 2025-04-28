@@ -1,3 +1,5 @@
+## [2](1)専用
+
 #######################################
 #  普遍変数を用いてランベルト問題を解く  #
 #######################################
@@ -202,7 +204,7 @@ for i_dep in range(1): #(len(ephemeris_E)):
       else:
         tof_days = tof / (24*60*60)
         if l[2] < 100:
-          result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, l[0], l[1], l[2]])
+          result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, l[0], l[1], l[2], l[3]])
         #result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, l.get_v1()[0], l.get_v2()[0]])
         
 with open("result0.txt", "w") as file:

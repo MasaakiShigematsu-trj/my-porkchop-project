@@ -196,7 +196,9 @@ for i_dep in range(len(ephemeris_E)):
       else:
         tof_days = tof / (24*60*60)
         if l[2] < 100:
-          result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, l[0], l[1], l[2]])
+          result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, l[0], l[1], l[2], l[3]])
+        else:
+          result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, float('nan'), float('nan'), float('nan'), float('nan')])
         #result.append([ephemeris_E[i_dep][0], ephemeris_M[i_arr][0], tof_days, l.get_v1()[0], l.get_v2()[0]])
         
 with open("result.txt", "w") as file:
