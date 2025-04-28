@@ -68,7 +68,7 @@ plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=2))
 plt.gca().yaxis.set_major_locator(mdates.MonthLocator(interval=2))
 
 # x軸の目盛りを斜めに回転
-plt.xticks(rotation=45)
+plt.xticks(rotation=90)
 
 plt.grid(True)
 
