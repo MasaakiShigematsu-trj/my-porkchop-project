@@ -47,7 +47,7 @@ Dep_grid_dates, Arr_grid_dates = np.meshgrid(dep_dates, arr_dates)
 levels_vinf1 = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 levels_vinf2 = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 levels_DV = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-levels_TOF = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+levels_TOF = [100, 300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 3100]
 
 # 等高線の描画関数
 def plot_contours(grid, levels, title, filename, colorbar_label, cmap='jet'):
