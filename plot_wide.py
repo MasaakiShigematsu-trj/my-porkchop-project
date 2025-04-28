@@ -4,7 +4,7 @@ from astropy.time import Time
 import matplotlib.dates as mdates
 
 # ファイルから結果を読み込み
-data = np.loadtxt("result_f1.txt")
+data = np.loadtxt("result.txt")
 
 # データを各軸に分解
 dep_JD = data[:, 0]
@@ -57,11 +57,11 @@ def plot_contours(grid, levels, title, filename, colorbar_label, cmap='jet'):
     cp = plt.contourf(Dep_grid_dates, Arr_grid_dates, grid, levels=levels, cmap=cmap, extend='both')
 
     # 等高線（線だけ）
-    cs = plt.contour(Dep_grid_dates, Arr_grid_dates, grid, levels=levels, colors='black', linewidths=0.8)
+    #cs = plt.contour(Dep_grid_dates, Arr_grid_dates, grid, levels=levels, colors='black', linewidths=0.8)
     TOFs = plt.contour(Dep_grid_dates, Arr_grid_dates, TOF_grid, levels=levels_TOF, colors='black', linewidths=0.5)
 
     # ラベルつける
-    plt.clabel(cs, inline=True, fontsize=8, fmt="%.0f")
+    #plt.clabel(cs, inline=True, fontsize=8, fmt="%.0f")
     plt.clabel(TOFs, inline=True, fontsize=8, fmt="%.0f")
 
     # カラーバー
@@ -77,8 +77,8 @@ def plot_contours(grid, levels, title, filename, colorbar_label, cmap='jet'):
     plt.gca().yaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
     # x軸・y軸の日付の間隔を月単位で調整
-    plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=1))
-    plt.gca().yaxis.set_major_locator(mdates.MonthLocator(interval=1))
+    plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+    plt.gca().yaxis.set_major_locator(mdates.MonthLocator(interval=3))
 
     # x軸とy軸の範囲を調整（見たい範囲を指定）
     plt.xlim([min(dep_dates), max(dep_dates)])  # 出発日の範囲
@@ -97,6 +97,6 @@ def plot_contours(grid, levels, title, filename, colorbar_label, cmap='jet'):
     plt.show()
 
 # 各等高線を描画して保存
-plot_contours(vinf1_grid, levels_vinf1, "Porkchop Plot : Vinf_0", "porkchop_f1_vinf1.png", "Vinf_0 [km/s]")
-plot_contours(vinf2_grid, levels_vinf2, "Porkchop Plot : Vinf_f", "porkchop_f1_vinf2.png", "Vinf_f [km/s]")
-plot_contours(DV_grid, levels_DV, "Porkchop Plot : V_total ( = Vinf_0 + Vinf_f)", "porkchop_f1_vtotal.png", "V_total [km/s]")
+plot_contours(vinf1_grid, levels_vinf1, "Porkchop Plot : Vinf_0", "porkchop_wide_vinf1.png", "Vinf_0 [km/s]")
+plot_contours(vinf2_grid, levels_vinf2, "Porkchop Plot : Vinf_f", "porkchop_wide_vinf2.png", "Vinf_f [km/s]")
+plot_contours(DV_grid, levels_DV, "Porkchop Plot : V_total ( = Vinf_0 + Vinf_f)", "porkchop_wide_vtotal.png", "V_total [km/s]")
