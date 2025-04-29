@@ -1,105 +1,116 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import pykep as pk
-from pykep.planet import jpl_lp
-from astropy.time import Time
+import matplotlib.ticker as ticker
 
-# ----------------------
-# 1. 出発日・到着日（ユリウス日）
-# ----------------------
-# 出発日と到着日を定義
-# 出発日・到着日
-launch_epoch = pk.epoch_from_string('2030-12-16 00:00:00')
-arrival_epoch = pk.epoch_from_string('2031-09-23 00:00:00')
+# 地球のエフェメリス情報を読み込み
+ephemeris_E = []
 
-TOF_sec = (arrival_epoch.mjd2000 - launch_epoch.mjd2000) * 86400  # [秒]
+with open("family2_E.txt", "r") as file:
+    buffer = []  # 一時的に行を保持するリスト
+    for line in file:
+        # 行をバッファに追加
+        buffer.append(line.strip())
+
+        # バッファに4行たまったら処理を開始
+        if len(buffer) == 4:
+            for i, buf_line in enumerate(buffer):
+                if "= A.D." in buf_line:  # `= A.D.`を含む場合
+                    # `=A.D.` の前の値を取得
+                    JD_value = buf_line.split()[0]
+                    
+                    # 次の行の3つの値を取得
+                    r_line = buffer[i + 1].split() if i + 1 < len(buffer) else []
+                    v_line = buffer[i + 2].split() if i + 2 < len(buffer) else []
+                    
+                    if len(r_line) >= 3 and len(v_line) >= 3:
+                        values = [float(JD_value)] + list(map(float, r_line[:3])) + list(map(float, v_line[:3]))
+                        ephemeris_E.append(values)
+            
+            # 処理後、バッファをクリア
+            buffer = []
 
 
+# 火星のエフェメリス情報を読み込み
+ephemeris_M = []
 
-# ----------------------
-# 2. 惑星データの取得
-# ----------------------
-earth = jpl_lp('earth')
-mars = jpl_lp('mars')
+with open("family2_M.txt", "r") as file:
+    buffer = []  # 一時的に行を保持するリスト
+    for line in file:
+        # 行をバッファに追加
+        buffer.append(line.strip())
 
-r1, v1 = earth.eph(launch_epoch)
-r2, v2 = mars.eph(arrival_epoch)
-mu_sun = pk.MU_SUN  # [km^3/s^2]
+        # バッファに4行たまったら処理を開始
+        if len(buffer) == 4:
+            for i, buf_line in enumerate(buffer):
+                if "= A.D." in buf_line:  # `= A.D.`を含む場合
+                    # `=A.D.` の前の値を取得
+                    JD_value = buf_line.split()[0]
+                    
+                    # 次の行の3つの値を取得
+                    r_line = buffer[i + 1].split() if i + 1 < len(buffer) else []
+                    v_line = buffer[i + 2].split() if i + 2 < len(buffer) else []
+                    
+                    if len(r_line) >= 3 and len(v_line) >= 3:
+                        values = [float(JD_value)] + list(map(float, r_line[:3])) + list(map(float, v_line[:3]))
+                        ephemeris_M.append(values)
+                        
+            
+            # 処理後、バッファをクリア
+            buffer = []
 
-# ----------------------
-# 3. ランベール問題を解く
-# ----------------------
-lambert_solutions = pk.lambert_problem(r1, r2, TOF_sec, mu_sun)
-v1_departure = lambert_solutions.get_v1()[0]
-v2_arrival = lambert_solutions.get_v2()[0]
 
-# ----------------------
-# 4. 軌道を積分する（宇宙機）
-# ----------------------
-num_points = 1000
-times = np.linspace(0, TOF_sec, num_points)
-r_sc = []
+# ephemeris_Eの2, 3, 4列目をx, y, z座標として抽出
+x_Ekm = [row[1] for row in ephemeris_E]
+y_Ekm = [row[2] for row in ephemeris_E]
+z_Ekm = [row[3] for row in ephemeris_E]
 
-for t in times:
-    M = np.linalg.norm(v1_departure)**2/2 - mu_sun/np.linalg.norm(r1)
-    a = -mu_sun/(2*M)
-    r, _ = pk.propagate_lagrangian(r1, v1_departure, t, mu_sun)
-    r_sc.append(r)
+x_Mkm = [row[1] for row in ephemeris_M]
+y_Mkm = [row[2] for row in ephemeris_M]
+z_Mkm = [row[3] for row in ephemeris_M]
 
-r_sc = np.array(r_sc)
+AU = 1.495978707e8
+x_E = [xi / AU for xi in x_Ekm]
+y_E = [yi / AU for yi in y_Ekm]
+z_E = [zi / AU for zi in z_Ekm]
 
-# ----------------------
-# 5. 地球と火星の軌道を描画
-# ----------------------
-# 周回軌道をサンプリング
-theta = np.linspace(0, 2*np.pi, num_points)
+x_M = [xi / AU for xi in x_Mkm]
+y_M = [yi / AU for yi in y_Mkm]
+z_M = [zi / AU for zi in z_Mkm]
 
-# 地球軌道（円軌道近似）
-r_earth_orbit = []
-for angle in theta:
-    r, _ = earth.eph(launch_epoch + (angle/(2*np.pi))*365.25)
-    r_earth_orbit.append(r)
-r_earth_orbit = np.array(r_earth_orbit)
-
-# 火星軌道（円軌道近似）
-r_mars_orbit = []
-for angle in theta:
-    r, _ = mars.eph(launch_epoch + (angle/(2*np.pi))*686.98)
-    r_mars_orbit.append(r)
-r_mars_orbit = np.array(r_mars_orbit)
-
-# ----------------------
-# 6. 3Dプロット
-# ----------------------
-fig = plt.figure(figsize=(10, 8))
+fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
+ax.plot(x_E, y_E, z_E, color='lightblue', label='Earth Orbit')
+ax.plot(x_M, y_M, z_M, color='orange', label='Mars Orbit')
 
-# 太陽描画
-ax.scatter(0, 0, 0, color='yellow', s=100, label='Sun')
+ax.set_xlabel('X (AU)')
+ax.set_ylabel('Y (AU)')
+ax.set_zlabel('Z (AU)')
 
-# 地球軌道
-ax.plot(r_earth_orbit[:,0], r_earth_orbit[:,1], r_earth_orbit[:,2], 'b', label='Earth Orbit')
-# 火星軌道
-ax.plot(r_mars_orbit[:,0], r_mars_orbit[:,1], r_mars_orbit[:,2], 'r', label='Mars Orbit')
-# 宇宙機遷移軌道
-ax.plot(r_sc[:,0], r_sc[:,1], r_sc[:,2], 'g', label='Spacecraft Trajectory')
+# 軸の表示範囲を調整
+ax.set_xlim(-2.0, 2.0)
+ax.set_ylim(-2.0, 2.0)
+ax.set_zlim(-0.5, 0.5)
 
-# 地球出発点
-ax.scatter(r1[0], r1[1], r1[2], color='blue', s=50, label='Earth Departure')
-# 火星到着点
-ax.scatter(r2[0], r2[1], r2[2], color='red', s=50, label='Mars Arrival')
+# 立方体の枠で表示
+ax.set_box_aspect([1, 1, 1])
 
-ax.set_xlabel('X [km]')
-ax.set_ylabel('Y [km]')
-ax.set_zlabel('Z [km]')
-ax.set_title('Earth-Mars Transfer (Lambert Solution)')
+# ★ Z軸の目盛り間隔を0.25 AUに設定 ★
+ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
+ax.yaxis.set_major_locator(ticker.MultipleLocator(0.5))
+ax.zaxis.set_major_locator(ticker.MultipleLocator(0.5))
+
 ax.legend()
-ax.grid(True)
-ax.set_box_aspect([1,1,1])  # aspect ratioを1:1:1に
+plt.tight_layout()
+plt.show()
 
-# 保存（オプション）
-plt.savefig("trj1.png", dpi=300, bbox_inches='tight')
 
-# 表示
-plt.show(block=True)
+# 2次元プロット
+plt.figure()
+plt.plot(x_E, y_E, color='lightblue', label='Earth Orbit (2D)')
+plt.plot(x_M, y_M, color='orange', label='Mars Orbit (2D)')
+plt.xlabel('X (AU)')
+plt.ylabel('Y (AU)')
+plt.legend()
+plt.grid()
+plt.axis('equal')
+plt.show()
